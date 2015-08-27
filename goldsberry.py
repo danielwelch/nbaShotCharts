@@ -93,8 +93,7 @@ def add_expected_points_scored(df, avg_df):
     return df
 
 
-players = nba.Players()
-lebron_id = players.get_player_id("James, LeBron")[0]
+lebron_id = nba.get_player_id("James, LeBron")[0]
 
 lebron = nba.Shots(lebron_id)
 lebron_sc = lebron.get_shots()
