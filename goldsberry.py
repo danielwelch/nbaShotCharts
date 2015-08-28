@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import nbaShotCharts as nba
+import argparse
 
 
 def get_nba_avg(df, basic, area, range):
@@ -93,26 +94,44 @@ def add_expected_points_scored(df, avg_df):
     return df
 
 
-lebron_id = nba.get_player_id("James, LeBron")[0]
+def goldsberry(player_name, hex_gridsize=30, cmap=plt.cm.coolwarm, joint=False):
+    player = nba.Shots(nba.get_player_id(player_name))
+    nba_avg = player.get_league_avg()
+    player_sc = add_expected_points_scored(
+        add_points_scored(
+            player.get_shots()
+        ), nba_avg
+    )
 
-lebron = nba.Shots(lebron_id)
-lebron_sc = lebron.get_shots()
-nba_avg = lebron.get_league_avg()
+    plt.figure(figsize=(12, 11))
+    nba.draw_court(outer_lines=True)
 
-lebron_sc = add_points_scored(lebron_sc)
-lebron_sc = add_expected_points_scored(lebron_sc, nba_avg)
+    if joint:
+        pass
+    else:
+        nba.shot_chart(
+            x=player_sc.LOC_X, y=player_sc.LOC_Y, kind="hex",
+            C=np.divide(player_sc.POINTS_SCORED, player_sc.EXPECTED_POINTS_SCORED),
+            hex_gridsize=hex_gridsize,
+            cmap=cmap,
+        )
 
+    plt.xlim(-300, 300)
+    plt.ylim(-100, 500)
+    plt.show()
 
-plt.figure(figsize=(12, 11))
-nba.draw_court(outer_lines=True)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Create goldsberry-like nba shot charts')
+    parser.add_argument(
+        '--player', type=str,
+        default="James, LeBron",
+        help="player name in 'Last, First' format"
+    )
+    parser.add_argument(
+        '--hex_gridsize', type=int,
+        default=30,
+        help="hex gridsize for matplotlib"
+    )
 
-nba.shot_chart(
-    x=lebron_sc.LOC_X, y=lebron_sc.LOC_Y, kind="hex",
-    C=np.divide(lebron_sc.POINTS_SCORED, lebron_sc.EXPECTED_POINTS_SCORED),
-    hex_gridsize=30,
-    cmap=plt.cm.coolwarm
-)
-
-plt.xlim(-300, 300)
-plt.ylim(-100, 500)
-plt.show()
+    args = parser.parse_args()
+    goldsberry(args.player)
